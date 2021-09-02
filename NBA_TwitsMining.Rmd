@@ -1,7 +1,7 @@
 ---
 title: "NBA topic mining"
 author: "Shanshan Yu"
-date: "10/30/2017"
+
 output:
   word_document: default
   pdf_document: default
