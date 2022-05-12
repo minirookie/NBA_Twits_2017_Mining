@@ -1,18 +1,18 @@
----
-title: "NBA topic mining"
-author: "Shanshan Yu"
-
+--
+title: "NBA Topic Mining"
+author: "Shanshan Bradford (Shanshan Yu)"
 output:
-  word_document: default
+  html_document: default
   pdf_document: default
+  word_document: default
 ---
 
 Section 1
-```{r setup, include = T}
+```{r setup, include = TRUE}
+
 #clear up memory, set working directory and seeds
 rm(list = ls())
-setwd("/Users/syu/Documents_syu_Backup/Projects_Github")
-
+setwd("/Users/syu/Library/CloudStorage/OneDrive-St.JudeChildren'sResearchHospital/UDrive/Documents_syu_Backup/Github_deposit")
 
 #Load twitter package
 library(twitteR)
@@ -20,30 +20,43 @@ library(bitops)
 library(RCurl)
 library(ROAuth)
 
-# 1. Retrieve tweets from Twitter with the hashtag #nba 
-
-#Assign twitter consumer key, secret and access token and secret
-consumer_key <- "QLmWyDb3OmiMi7kkWta68F5rd" 
-consumer_secret <- "7YmvWUwlj6VwqA1B5P1TDetEelfJJnaqOyqGjIKisgvKFvXeib"
-access.token <- "913200731829698560-N8rWlg3JqjK473rMWpqpEcvI8nHWC1B"
-access.secret <- "Ka7zH3edvoOULrJC4CoudLZmqJiTxoI9JlkGOxBNJbGw2"
-
-#connect to twitter and search tweets #nba
-setup_twitter_oauth(consumer_key, consumer_secret, access.token, access.secret)
-nba.tweets <- searchTwitter("#nba", n = 320, lang = "en")
-
-# strip retweets and check the number of tweets afterward
-nba.nort <- strip_retweets(nba.tweets, strip_manual = T, strip_mt = T)
-length(nba.nort)
-
-#convert the tweets to dataframe and check out associated attributes
-nba.df <- twListToDF(nba.nort)
-colnames(nba.df)
-
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-#save tweets to csv
+#1.Retrieve tweets from Twitter with the hashtag #nba #
+
+#Assign Twitter consumer key, secret and access token and secret
+
+consumer_key <- "QLmWyDb3OmiMi7kkWta68F5rd" 
+
+consumer_secret <- "7YmvWUwlj6VwqA1B5P1TDetEelfJJnaqOyqGjIKisgvKFvXeib"
+
+access.token <- "913200731829698560-N8rWlg3JqjK473rMWpqpEcvI8nHWC1B"
+
+access.secret <- "Ka7zH3edvoOULrJC4CoudLZmqJiTxoI9JlkGOxBNJbGw2"
+
+#connect to twitter and search tweets #nba 
+
+setup_twitter_oauth(consumer_key, consumer_secret, access.token, access.secret)
+
+nba.tweets <- searchTwitter("#nba", n = 320, lang = "en")
+
+
+#strip retweets and check the number of tweets afterward 
+
+nba.nort <- strip_retweets(nba.tweets, strip_manual = T, strip_mt = T)
+
+length(nba.nort)
+
+
+#convert the tweets to dataframe and check out associated attributes 
+
+nba.df <- twListToDF(nba.nort)
+
+colnames(nba.df)
+
+#save tweets to csv 
+
 write.csv(nba.df, file = "NBA_tweets.csv", na = "NA")
 
 Section 2
@@ -103,7 +116,8 @@ input.nbacorp <- tm_map(trans.nbacorp, removeWords,
 #find an empty entry
 inspect(input.nbacorp[[4]])
 
-# 4. Generate a word cloud with the nba tweets
+
+# 4. Generate a word cloud with the NBA tweets
 set.seed(1234)
 
 #generate document-term matrix in order to remove empty documents
@@ -116,7 +130,7 @@ nbacorp.docterm <- DocumentTermMatrix(input.nbacorp.noemp)
 # or the following code will generate the same doc-term matrix with empty entries removed
 nbacorp.docterm <- nbacorp.dtm[which(row.total > 0),]
 
-#The index of the matrix shifts accordingly but the doc entry index remain the same
+#The index of the matrix shifts accordingly, but the doc entry index remains the same
 inspect(nbacorp.docterm[15:16,])
 
 # generate the term-document Matrix from the cleaned document-term matrix
@@ -139,7 +153,8 @@ term.barplot <- barplot(nbaterm.minfreq6, horiz = F, col = rainbow(length(nbater
 legend(20, 20.5, legend = names(nbaterm.minfreq6),fill = rainbow(length(nbaterm.minfreq6)),
       cex = 0.75, ncol = 3, x.intersp = 0.2, y.intersp = 0.7, text.width = 9, bty = "n")
 
-# 5. Identify the top three pairs of tweets and most frequently used terms among these pairs
+
+# 5. Identify the top three pairs of tweets and the most frequently used terms among these pairs
 library(reshape2)
 library(Matrix)
 library("lsa")
@@ -165,7 +180,7 @@ nbacorp.cosmolten <- melt(nbacorp.cosmod, na.rm = T, c("m.row.doc", "m.col.doc")
 nbacorp.cosmolten <- nbacorp.cosmolten[order(nbacorp.cosmolten$value, decreasing = T),]
 nbacorp.cosmolten[1:40,]
 
-#inpect tweet pairs with cosine similarity of 1 --> These tweets seems to be repost
+#inspect tweet pairs with cosine similarity of 1 --> These tweets seems to be repost
 inspect(input.nbacorp[[15]])
 inspect(input.nbacorp[[16]])
 inspect(input.nbacorp[[42]])
@@ -178,7 +193,7 @@ typeof(row.names(nbacorp.docterm)) # doc entry number in the doc-term matrix are
 # Therefore, the character value instead of numeric values can correctly index doc entries
 inspect(nbacorp.docterm[c("15","16","61","42","57","44"),]) 
 
-#coerce the doc-term matrix to R matirx
+#coerce the doc-term matrix to R matrix
 nbacorp.docterm.matrix <- as.matrix(nbacorp.docterm)
 
 #subset the matrix with reposted tweets
@@ -216,7 +231,7 @@ nbacorp.similar.matrix[, 1:20] #although subsetted, matrix inherited every term 
 #which() & apply() index the terms that are only in the similar docs/tweets
 term.insimilar <- names(which(apply(nbacorp.similar.matrix, 2, sum) > 0))
 
-#Check whether any of the top 10 terms included in the similar tweets
+#Check whether any of the top 10 terms are included in the similar tweets
 top10.term
 term.insimilar
 identical.term(term.insimilar, top10.term)
